@@ -2,6 +2,7 @@ plugins {
   `java-gradle-plugin`
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.plugin.publish)
+  signing
 }
 
 kotlin {
@@ -43,4 +44,21 @@ project.tasks.named<Task>("check") {
 
 project.tasks.named<Test>("test") {
   useJUnitPlatform()
+}
+
+publishing {
+  repositories {
+    val repoUri =
+      if (version.toString().endsWith("-SNAPSHOT")) {
+        "https://maven.emily.ar/snapshots"
+      } else {
+        "https://maven.emily.ar/releases"
+      }
+
+    maven {
+      name = "emilyMaven"
+      url = uri(repoUri)
+      credentials(PasswordCredentials::class)
+    }
+  }
 }
