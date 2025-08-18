@@ -17,6 +17,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
@@ -25,6 +26,8 @@ import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.jvm.toolchain.JavaLauncher
@@ -36,6 +39,7 @@ import java.lang.module.ModuleReference
 import java.net.URI
 import javax.inject.Inject
 
+@CacheableTask
 abstract class JpackageTask : DefaultTask() {
 
   @get:Input
@@ -64,14 +68,17 @@ abstract class JpackageTask : DefaultTask() {
   val aboutUrl: Property<URI> = objects.property(URI::class.java)
 
   @get:InputFile
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   @get:Optional
   val icon: RegularFileProperty = objects.fileProperty()
 
   @get:InputFile
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   @get:Optional
   val licenseFile: RegularFileProperty = objects.fileProperty()
 
   @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   val appContent: ConfigurableFileCollection = objects.fileCollection()
 
   @get:Input
@@ -83,15 +90,18 @@ abstract class JpackageTask : DefaultTask() {
   val launcherAsService: Property<Boolean> = objects.property(Boolean::class.java)
 
   @get:InputFile
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   val applicationJar: RegularFileProperty = objects.fileProperty()
 
   @get:Internal
   val runtimeClasspath: ConfigurableFileCollection = objects.fileCollection()
 
   @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   val classPath: ConfigurableFileCollection = objects.fileCollection()
 
   @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   val modulePath: ConfigurableFileCollection = objects.fileCollection()
 
   @get:Input

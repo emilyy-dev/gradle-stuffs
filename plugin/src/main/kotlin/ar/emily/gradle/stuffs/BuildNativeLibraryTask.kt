@@ -10,16 +10,20 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
 import java.io.File
 import javax.inject.Inject
 
+@CacheableTask
 abstract class BuildNativeLibraryTask : DefaultTask() {
 
   @get:Internal
@@ -32,14 +36,17 @@ abstract class BuildNativeLibraryTask : DefaultTask() {
   val cppLanguageVersion: Property<String> = objects.property(String::class.java)
 
   @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   val sourceFiles: ConfigurableFileCollection = objects.fileCollection()
 
   @get:InputFiles
+  @get:PathSensitive(PathSensitivity.ABSOLUTE)
   protected val includeDirectories: ListProperty<String> = objects.listProperty(String::class.java)
   fun includeDirectory(dir: Directory): Unit = includeDirectories.add(dir.asFile.path)
   fun includeDirectory(dir: Provider<out Directory>): Unit = includeDirectories.add(dir.map { it.asFile.path })
 
   @get:InputFiles
+  @get:PathSensitive(PathSensitivity.ABSOLUTE)
   protected val libraryDirectories: ListProperty<String> = objects.listProperty(String::class.java)
   fun libraryDirectory(dir: Directory): Unit = libraryDirectories.add(dir.asFile.path)
   fun libraryDirectory(dir: Provider<out Directory>): Unit = libraryDirectories.add(dir.map { it.asFile.path })
