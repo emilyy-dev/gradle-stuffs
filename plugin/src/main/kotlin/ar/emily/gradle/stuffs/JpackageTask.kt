@@ -130,6 +130,7 @@ abstract class JpackageTask : DefaultTask() {
   val jlinkOptions: ListProperty<String> = objects.listProperty(String::class.java)
 
   @get:InputDirectory
+  @get:PathSensitive(PathSensitivity.ABSOLUTE)
   @get:Optional
   val runtimeImage: DirectoryProperty = objects.directoryProperty()
 
