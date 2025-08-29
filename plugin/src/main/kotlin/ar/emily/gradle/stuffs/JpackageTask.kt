@@ -79,6 +79,10 @@ abstract class JpackageTask : DefaultTask() {
 
   @get:InputFiles
   @get:PathSensitive(PathSensitivity.RELATIVE)
+  val additionalLaunchers: ConfigurableFileCollection = objects.fileCollection()
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
   val appContent: ConfigurableFileCollection = objects.fileCollection()
 
   @get:Input
@@ -273,6 +277,11 @@ abstract class JpackageTask : DefaultTask() {
     licenseFile.orNull?.also {
       add("--license-file")
       add(it.asFile.path)
+    }
+
+    additionalLaunchers.files.takeIf(Set<File>::isNotEmpty)?.forEach { file ->
+      add("--add-launcher")
+      add("${file.nameWithoutExtension}=${file.path}")
     }
 
     appContent.files.takeIf(Set<File>::isNotEmpty)?.also { files ->
