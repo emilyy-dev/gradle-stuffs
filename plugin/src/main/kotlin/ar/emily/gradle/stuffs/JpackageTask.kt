@@ -127,8 +127,11 @@ abstract class JpackageTask : DefaultTask() {
   @get:Input
   val applicationArgs: ListProperty<String> = objects.listProperty(String::class.java)
 
+  @get:Internal
+  protected val jpackageBuildDir: Provider<Directory> = layout.buildDirectory.dir("jpackage")
+
   @get:OutputDirectory
-  val outputDir: Provider<Directory> = layout.buildDirectory.dir("jpackage")
+  val outputDir: Provider<Directory> = jpackageBuildDir.zip(applicationName, Directory::dir)
 
   @get:Input
   val jlinkOptions: ListProperty<String> = objects.listProperty(String::class.java)
@@ -199,7 +202,7 @@ abstract class JpackageTask : DefaultTask() {
 
   private fun jpackageExecutable(): File = javaLauncher.get().executablePath.asFile.resolveSibling("jpackage")
 
-  private fun collectArguments(inputDir: File, tempDir: File) = mutableListOf<String>().apply {
+  private fun collectArguments(inputDir: File, tempDir: File) = buildList<String> {
     add("--temp")
     add(tempDir.path)
 
@@ -279,12 +282,12 @@ abstract class JpackageTask : DefaultTask() {
       add(it.asFile.path)
     }
 
-    additionalLaunchers.files.takeIf(Set<File>::isNotEmpty)?.forEach { file ->
+    additionalLaunchers.takeUnless(ConfigurableFileCollection::isEmpty)?.forEach { file ->
       add("--add-launcher")
       add("${file.nameWithoutExtension}=${file.path}")
     }
 
-    appContent.files.takeIf(Set<File>::isNotEmpty)?.also { files ->
+    appContent.takeUnless(ConfigurableFileCollection::isEmpty)?.also { files ->
       add("--app-content")
       add(files.joinToString(",") { file -> file.path })
     }
@@ -313,11 +316,6 @@ abstract class JpackageTask : DefaultTask() {
   }
 }
 
-private val File.jarModule: ModuleReference?
-  get() = ModuleFinder.of(toPath()).findAll().firstOrNull()
-
-private val File.isAutomaticModule: Boolean
-  get() = jarModule?.descriptor()?.isAutomatic ?: true
-
-private val File.moduleName: String?
-  get() = jarModule?.descriptor()?.name()
+private val File.jarModule: ModuleReference? get() = ModuleFinder.of(toPath()).findAll().firstOrNull()
+private val File.isAutomaticModule: Boolean get() = jarModule?.descriptor()?.isAutomatic ?: true
+private val File.moduleName: String? get() = jarModule?.descriptor()?.name()

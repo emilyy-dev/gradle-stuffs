@@ -19,31 +19,36 @@ dependencies {
 }
 
 gradlePlugin {
-  val stuffs by plugins.creating {
+  plugins.create("stuffs") {
     id = "ar.emily.gradle.stuffs"
     implementationClass = "ar.emily.gradle.stuffs.EmilyGradleStuffs"
   }
 }
 
 val functionalTestSourceSet = project.sourceSets.create("functionalTest")
-
-project.configurations["functionalTestImplementation"].extendsFrom(project.configurations["testImplementation"])
-project.configurations["functionalTestRuntimeOnly"].extendsFrom(project.configurations["testRuntimeOnly"])
-
-val functionalTest by project.tasks.registering(Test::class) {
-  testClassesDirs = functionalTestSourceSet.output.classesDirs
-  classpath = functionalTestSourceSet.runtimeClasspath
-  useJUnitPlatform()
-}
-
 gradlePlugin.testSourceSets.add(functionalTestSourceSet)
 
-project.tasks.named<Task>("check") {
-  dependsOn(functionalTest)
+project.configurations {
+  named("functionalTestImplementation") { extendsFrom(named("testImplementation")) }
+  named("functionalTestRuntimeOnly") { extendsFrom(named("testRuntimeOnly")) }
 }
 
-project.tasks.named<Test>("test") {
-  useJUnitPlatform()
+project.tasks {
+  val functionalTest =
+    register<Test>("functionalTest") {
+      testClassesDirs = functionalTestSourceSet.output.classesDirs
+      classpath = functionalTestSourceSet.runtimeClasspath
+      useJUnitPlatform()
+    }
+
+
+  named<Task>("check") {
+    dependsOn(functionalTest)
+  }
+
+  named<Test>("test") {
+    useJUnitPlatform()
+  }
 }
 
 publishing {

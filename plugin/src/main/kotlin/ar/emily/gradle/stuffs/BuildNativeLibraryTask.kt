@@ -55,7 +55,8 @@ abstract class BuildNativeLibraryTask : DefaultTask() {
   val libraryDependencies: ListProperty<String> = objects.listProperty(String::class.java)
 
   @get:OutputDirectory
-  protected val outputDirectory: Provider<Directory> = layout.buildDirectory.dir("natives")
+  protected val outputDirectory: Provider<Directory> =
+    layout.buildDirectory.dir("natives").zip(libraryName, Directory::dir)
 
   @get:Internal
   val outputFile: Provider<RegularFile> = outputDirectory.zip(libraryName.map(System::mapLibraryName), Directory::file)
@@ -72,11 +73,7 @@ abstract class BuildNativeLibraryTask : DefaultTask() {
 
   init {
     platformType.convention(
-      if (System.getProperty("os.name").lowercase() == "linux") {
-        PlatformType.LINUX
-      } else {
-        PlatformType.WINDOWS
-      }
+      if (System.getProperty("os.name").lowercase() == "linux") PlatformType.LINUX else PlatformType.WINDOWS
     )
   }
 
@@ -97,7 +94,7 @@ abstract class BuildNativeLibraryTask : DefaultTask() {
     execOps.exec { spec -> spec.args(collectArgs()).executable(cppCompiler.getOrElse("clang++")) }
   }
 
-  private fun collectArgs() = mutableListOf<String>().apply {
+  private fun collectArgs() = buildList<String> {
     addAll(listOf("-shared", "-x", "c++", "-O3", "-Wall", "-Wextra"))
     add("-o${outputFile.get().asFile.path}")
     add("-std=${cppLanguageVersion.get()}")
